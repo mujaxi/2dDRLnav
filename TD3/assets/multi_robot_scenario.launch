@@ -1,0 +1,19 @@
+<launch>
+<arg name="gui" value="false"/>
+
+   <!-- Gazebo  -->
+  <include file="$(find turtlebot3_bringup)/launch/empty_world.launch" />
+
+   
+   <!-- Robot with diff drive -->
+  <include file="$(find turtlebot3_bringup)/launch/turtlebot3_model.launch">
+     <arg name="model" value="waffle" />
+     <arg name="multi_robot_name" value="r1"/>
+     <arg name="robot_position" value="-x 2.0 -y 0.0 -z 0.01 -R 0 -P 0 -Y +0.0" />
+   </include>
+   
+
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find turtlebot3_description)/rviz/model.rviz"/>
+  
+
+</launch>

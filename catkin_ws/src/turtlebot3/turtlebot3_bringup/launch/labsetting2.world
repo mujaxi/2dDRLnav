@@ -1,0 +1,273 @@
+<sdf version="1.6">
+  <world name="default">
+    <!-- Sunlight -->
+    <include>
+      <uri>model://sun</uri>
+    </include>
+
+    <!-- Ground plane -->
+    <include>
+      <uri>model://ground_plane</uri>
+    </include>
+
+    <!-- Walls -->
+    <model name="walls">
+      <static>true</static>
+      <link name="wall_north">
+        <collision name="collision">
+          <geometry>
+            <box>
+              <size>8 0.1 1</size>
+            </box>
+          </geometry>
+        </collision>
+        <visual name="visual">
+          <geometry>
+            <box>
+              <size>8 0.1 1</size>
+            </box>
+          </geometry>
+          <material>
+            <script>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+              <name>Gazebo/Red</name>
+            </script>
+          </material>
+        </visual>
+        <pose>0 4 0.5 0 0 0</pose>
+      </link>
+
+      <link name="wall_south">
+        <collision name="collision">
+          <geometry>
+            <box>
+              <size>8 0.1 1</size>
+            </box>
+          </geometry>
+        </collision>
+        <visual name="visual">
+          <geometry>
+            <box>
+              <size>8 0.1 1</size>
+            </box>
+          </geometry>
+          <material>
+            <script>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+              <name>Gazebo/Red</name>
+            </script>
+          </material>
+        </visual>
+        <pose>0 -4 0.5 0 0 0</pose>
+      </link>
+
+      <link name="wall_east">
+        <collision name="collision">
+          <geometry>
+            <box>
+              <size>0.1 4 1</size>
+            </box>
+          </geometry>
+        </collision>
+        <visual name="visual">
+          <geometry>
+            <box>
+              <size>0.1 4 1</size>
+            </box>
+          </geometry>
+          <material>
+            <script>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+              <name>Gazebo/Red</name>
+            </script>
+          </material>
+        </visual>
+        <pose>4 0 0.5 0 0 0</pose>
+      </link>
+
+      <link name="wall_west">
+        <collision name="collision">
+          <geometry>
+            <box>
+              <size>0.1 4 1</size>
+            </box>
+          </geometry>
+        </collision>
+        <visual name="visual">
+          <geometry>
+            <box>
+              <size>0.1 4 1</size>
+            </box>
+          </geometry>
+          <material>
+            <script>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+              <name>Gazebo/Red</name>
+            </script>
+          </material>
+        </visual>
+        <pose>-4 0 0.5 0 0 0</pose>
+      </link>
+    </model>
+
+    <!-- Lane divider poles -->
+    <model name="lane_dividers">
+      <static>true</static>
+      <link name="pole_1">
+        <collision name="collision">
+          <geometry>
+            <cylinder>
+              <radius>0.08</radius>
+              <length>0.75</length>
+            </cylinder>
+          </geometry>
+        </collision>
+        <visual name="visual">
+          <geometry>
+            <cylinder>
+              <radius>0.08</radius>
+              <length>0.75</length>
+            </cylinder>
+          </geometry>
+          <material>
+            <script>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+              <name>Gazebo/Yellow</name>
+            </script>
+          </material>
+        </visual>
+        <pose>-1 1 0.375 0 0 0</pose>
+      </link>
+
+      <link name="pole_2">
+        <collision name="collision">
+          <geometry>
+            <cylinder>
+              <radius>0.08</radius>
+              <length>0.75</length>
+            </cylinder>
+          </geometry>
+        </collision>
+        <visual name="visual">
+          <geometry>
+            <cylinder>
+              <radius>0.08</radius>
+              <length>0.75</length>
+            </cylinder>
+          </geometry>
+          <material>
+            <script>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+              <name>Gazebo/Yellow</name>
+            </script>
+          </material>
+        </visual>
+        <pose>1 1 0.5 0 0 0</pose>
+      </link>
+
+      <link name="pole_3">
+        <collision name="collision">
+          <geometry>
+            <cylinder>
+              <radius>0.08</radius>
+              <length>0.75</length>
+            </cylinder>
+          </geometry>
+        </collision>
+        <visual name="visual">
+          <geometry>
+            <cylinder>
+              <radius>0.08</radius>
+              <length>0.75</length>
+            </cylinder>
+          </geometry>
+          <material>
+            <script>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+              <name>Gazebo/Yellow</name>
+            </script>
+          </material>
+        </visual>
+        <pose>-1 -1 0.5 0 0 0</pose>
+      </link>
+
+      <link name="pole_4">
+        <collision name="collision">
+          <geometry>
+            <cylinder>
+              <radius>0.08</radius>
+              <length>0.75</length>
+            </cylinder>
+          </geometry>
+        </collision>
+        <visual name="visual">
+          <geometry>
+            <cylinder>
+              <radius>0.08</radius>
+              <length>0.75</length>
+            </cylinder>
+          </geometry>
+          <material>
+            <script>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+              <name>Gazebo/Yellow</name>
+            </script>
+          </material>
+        </visual>
+        <pose>1 -1 0.5 0 0 0</pose>
+      </link>
+
+      <link name="pole_5">
+        <collision name="collision">
+          <geometry>
+            <cylinder>
+              <radius>0.08</radius>
+              <length>0.75</length>
+            </cylinder>
+          </geometry>
+        </collision>
+        <visual name="visual">
+          <geometry>
+            <cylinder>
+              <radius>0.08</radius>
+              <length>0.75</length>
+            </cylinder>
+          </geometry>
+          <material>
+            <script>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+              <name>Gazebo/Yellow</name>
+            </script>
+          </material>
+        </visual>
+        <pose>-1 0 0.5 0 0 0</pose>
+      </link>
+
+      <link name="pole_6">
+        <collision name="collision">
+          <geometry>
+            <cylinder>
+              <radius>0.08</radius>
+              <length>0.75</length>
+            </cylinder>
+          </geometry>
+        </collision>
+        <visual name="visual">
+          <geometry>
+            <cylinder>
+              <radius>0.08</radius>
+              <length>0.75</length>
+            </cylinder>
+          </geometry>
+          <material>
+            <script>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+              <name>Gazebo/Yellow</name>
+            </script>
+          </material>
+        </visual>
+        <pose>1 0 0.5 0 0 0</pose>
+      </link>
+    </model>
+  </world>
+</sdf>
