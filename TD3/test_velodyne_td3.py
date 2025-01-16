@@ -7,6 +7,9 @@ import torch.nn.functional as F
 
 from velodyne_env import GazeboEnv
 
+# export ROS_MASTER_URI=http://10.9.17.52:11311
+# export ROS_HOSTNAME=10.9.17.52
+
 
 class Actor(nn.Module):
     def __init__(self, state_dim, action_dim):
@@ -43,9 +46,10 @@ class TD3(object):
 
 
 # Set the parameters for the implementation
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")  # cuda or cpu
+# device = torch.device("cuda" if torch.cuda.is_available() else "cpu")  # cuda or cpu
+device = torch.device("cpu")
 seed = 0  # Random seed number
-max_ep = 500  # maximum number of steps per episode
+max_ep = 5e6  # maximum number of steps per episode
 file_name = "TD3_velodyne"  # name of the file to load the policy from
 
 
@@ -53,7 +57,7 @@ file_name = "TD3_velodyne"  # name of the file to load the policy from
 environment_dim = 20
 robot_dim = 4
 env = GazeboEnv("multi_robot_scenario.launch", environment_dim)
-time.sleep(5)
+time.sleep(1)
 torch.manual_seed(seed)
 np.random.seed(seed)
 state_dim = environment_dim + robot_dim
@@ -69,21 +73,29 @@ except:
 done = False
 episode_timesteps = 0
 state = env.reset()
-
+# time.sleep(5)
 # Begin the testing loop
 while True:
     action = network.get_action(np.array(state))
+    # print (state)
 
-    # Update action to fall in range [0,1] for linear velocity and [-1,1] for angular velocity
-    a_in = [(action[0] + 1) / 2, action[1]]
+    action [0] = ((action[0] + 1) / 2) * 0.26
+    a_in = [action[0], action[1]]
     next_state, reward, done, target = env.step(a_in)
     done = 1 if episode_timesteps + 1 == max_ep else int(done)
 
     # On termination of episode
     if done:
-        state = env.reset()
+        env.save_trajectory()
+        print("Done!")
+        state = env.reset() #for training
+        # time.sleep(1)
         done = False
         episode_timesteps = 0
+        
+        
     else:
         state = next_state
         episode_timesteps += 1
+
+

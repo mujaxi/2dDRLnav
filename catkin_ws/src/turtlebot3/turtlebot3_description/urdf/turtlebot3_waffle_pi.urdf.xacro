@@ -154,7 +154,7 @@
 
   <link name="imu_link"/>
 	
-  <!-- laser 
+  <!-- laser  -->
   <joint name="scan_joint" type="fixed">
     <parent link="base_link"/>
     <child link="base_scan"/>
@@ -184,7 +184,7 @@
                iyy="0.001" iyz="0.0"
                izz="0.001" />
     </inertial>
-  </link>-->
+  </link>
 
   <joint name="camera_joint" type="fixed">
     <origin xyz="0.073 -0.011 0.084" rpy="0 0 0"/>
@@ -215,9 +215,9 @@
   </joint>
   <link name="camera_rgb_optical_frame"/>
   
-  <xacro:include filename="$(find velodyne_description)/urdf/VLP-16.urdf.xacro"/>
+  <!-- <xacro:include filename="$(find velodyne_description)/urdf/VLP-16.urdf.xacro"/>
   <xacro:VLP-16 parent="base_link" name="velodyne" topic="/velodyne_points" hz="10" samples="360" gpu="false" min_angle="-1.57" max_angle="1.57" min_range="0.1">
     <origin xyz="-0.064 0 0.122" rpy="0 0 0" />
-  </xacro:VLP-16>
+  </xacro:VLP-16> -->
 
 </robot>

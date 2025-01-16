@@ -21,11 +21,12 @@ def evaluate(network, epoch, eval_episodes=10):
         done = False
         while not done and count < 501:
             action = network.get_action(np.array(state))
-            a_in = [(action[0] + 1) / 2, action[1]]
+            action [0] = ((action[0] + 1) / 2) * 0.26
+            a_in = [action[0], action[1]]
             state, reward, done, _ = env.step(a_in)
             avg_reward += reward
             count += 1
-            if reward < -45:
+            if reward < -40:
                 col += 1
     avg_reward /= eval_episodes
     avg_col = col / eval_episodes
@@ -42,9 +43,9 @@ class Actor(nn.Module):
     def __init__(self, state_dim, action_dim):
         super(Actor, self).__init__()
 
-        self.layer_1 = nn.Linear(state_dim, 400)
-        self.layer_2 = nn.Linear(400, 300)
-        self.layer_3 = nn.Linear(300, action_dim)
+        self.layer_1 = nn.Linear(state_dim, 800)
+        self.layer_2 = nn.Linear(800, 600)
+        self.layer_3 = nn.Linear(600, action_dim)
         self.tanh = nn.Tanh()
 
     def forward(self, s):
@@ -58,15 +59,15 @@ class Critic(nn.Module):
     def __init__(self, state_dim, action_dim):
         super(Critic, self).__init__()
 
-        self.layer_1 = nn.Linear(state_dim, 400)
-        self.layer_2_s = nn.Linear(400, 300)
-        self.layer_2_a = nn.Linear(action_dim, 300)
-        self.layer_3 = nn.Linear(300, 1)
+        self.layer_1 = nn.Linear(state_dim, 800)
+        self.layer_2_s = nn.Linear(800, 600)
+        self.layer_2_a = nn.Linear(action_dim, 600)
+        self.layer_3 = nn.Linear(600, 1)
 
-        self.layer_4 = nn.Linear(state_dim, 400)
-        self.layer_5_s = nn.Linear(400, 300)
-        self.layer_5_a = nn.Linear(action_dim, 300)
-        self.layer_6 = nn.Linear(300, 1)
+        self.layer_4 = nn.Linear(state_dim, 800)
+        self.layer_5_s = nn.Linear(800, 600)
+        self.layer_5_a = nn.Linear(action_dim, 600)
+        self.layer_6 = nn.Linear(600, 1)
 
     def forward(self, s, a):
         s1 = F.relu(self.layer_1(s))
@@ -94,13 +95,13 @@ class TD3(object):
         self.actor = Actor(state_dim, action_dim).to(device)
         self.actor_target = Actor(state_dim, action_dim).to(device)
         self.actor_target.load_state_dict(self.actor.state_dict())
-        self.actor_optimizer = torch.optim.Adam(self.actor.parameters(), lr=1e-4) #reduced learning rate
+        self.actor_optimizer = torch.optim.Adam(self.actor.parameters(), lr=1e-4)
 
         # Initialize the Critic networks
         self.critic = Critic(state_dim, action_dim).to(device)
         self.critic_target = Critic(state_dim, action_dim).to(device)
         self.critic_target.load_state_dict(self.critic.state_dict())
-        self.critic_optimizer = torch.optim.Adam(self.critic.parameters(), lr=1e-4) #reduced learning rate
+        self.critic_optimizer = torch.optim.Adam(self.critic.parameters(), lr=1e-4)
 
         self.max_action = max_action
         self.writer = SummaryWriter()
@@ -120,7 +121,7 @@ class TD3(object):
         discount=0.99,
         tau=0.005,
         policy_noise=0.1,  # discount=0.99
-        noise_clip=0.4,
+        noise_clip=0.5,
         policy_freq=2,
     ):
         av_Q = 0
@@ -168,8 +169,6 @@ class TD3(object):
             # Perform the gradient descent
             self.critic_optimizer.zero_grad()
             loss.backward()
-            # Gradient clipping to avoid exploding gradients
-            torch.nn.utils.clip_grad_norm_(self.critic.parameters(), 0.5)  # Clip gradients to 0.5
             self.critic_optimizer.step()
 
             if it % policy_freq == 0:
@@ -179,8 +178,6 @@ class TD3(object):
                 actor_grad = -actor_grad.mean()
                 self.actor_optimizer.zero_grad()
                 actor_grad.backward()
-                # Gradient clipping for the actor as well
-                torch.nn.utils.clip_grad_norm_(self.actor.parameters(), 0.5)  # Clip gradients to 0.5
                 self.actor_optimizer.step()
 
                 # Use soft update to update the actor-target network parameters by
@@ -221,27 +218,28 @@ class TD3(object):
 
 
 # Set the parameters for the implementation
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")  # cuda or cpu
+# device = torch.device("cuda" if torch.cuda.is_available() else "cpu")  # cuda or cpu
+device = torch.device("cpu")
 seed = 0  # Random seed number
-eval_freq = 5e3  # After how many steps to perform the evaluation
+eval_freq = 2e4  # After how many steps to perform the evaluation
 max_ep = 500  # maximum number of steps per episode
 eval_ep = 10  # number of episodes for evaluation
-max_timesteps = 5e6  # Maximum number of steps to perform
+max_timesteps = 4e6  # Maximum number of steps to perform
 expl_noise = 1  # Initial exploration noise starting value in range [expl_min ... 1]
 expl_decay_steps = (
-    5000  # Number of steps over which the initial exploration noise will decay over
+    10000  # Number of steps over which the initial exploration noise will decay over
 )
 expl_min = 0.1  # Exploration noise after the decay in range [0...expl_noise]
 batch_size = 40  # Size of the mini-batch
 discount = 0.9999  # Discount factor to calculate the discounted future reward (should be close to 1)
 tau = 0.005  # Soft target update variable (should be close to 0)
-policy_noise = 0.1  # Added noise for exploration
-noise_clip = 0.4  # Maximum clamping values of the noise
+policy_noise = 0.2  # Added noise for exploration
+noise_clip = 0.5  # Maximum clamping values of the noise
 policy_freq = 2  # Frequency of Actor network updates
-buffer_size = 1e4  # Maximum size of the buffer
+buffer_size = 1e6  # Maximum size of the buffer
 file_name = "TD3_velodyne"  # name of the file to store the policy
-save_model = True  # Weather to save the model or not
-load_model = False  # Weather to load a stored model
+save_model = True # Weather to save the model or not
+load_model = True  # Weather to load a stored model
 random_near_obstacle = False  # To take random actions near obstacles or not
 
 # Create the network storage folders
@@ -251,7 +249,7 @@ if save_model and not os.path.exists("./pytorch_models"):
     os.makedirs("./pytorch_models")
 
 # Create the training environment
-environment_dim = 360
+environment_dim = 20
 robot_dim = 4
 env = GazeboEnv("multi_robot_scenario.launch", environment_dim)
 time.sleep(5)
@@ -319,39 +317,28 @@ while timestep < max_timesteps:
         episode_timesteps = 0
         episode_num += 1
 
-    # add some exploration noise
+    # # add some exploration noise
     if expl_noise > expl_min:
         expl_noise = expl_noise - ((1 - expl_min) / expl_decay_steps)
 
     action = network.get_action(np.array(state))
+
     action = (action + np.random.normal(0, expl_noise, size=action_dim)).clip(
         -max_action, max_action
     )
 
-    # If the robot is facing an obstacle, randomly force it to take a consistent random action.
-    # This is done to increase exploration in situations near obstacles.
-    # Training can also be performed without it
-    if random_near_obstacle:
-        if (
-            np.random.uniform(0, 1) > 0.85
-            and min(state[4:-8]) < 0.6
-            and count_rand_actions < 1
-        ):
-            count_rand_actions = np.random.randint(8, 15)
-            random_action = np.random.uniform(-1, 1, 2)
 
-        if count_rand_actions > 0:
-            count_rand_actions -= 1
-            action = random_action
-            action[0] = -1
-
-    # Update action to fall in range [0,1] for linear velocity and [-1,1] for angular velocity
-    a_in = [(action[0] + 1) / 2, action[1]]
-    # print(f"Actions: {a_in}")
+    # clip the maximum/minimum action[0] value to 0.2 as turtlebot max velocity is 0.26m/s
+    action [0] = ((action[0] + 1) / 2) * 0.26
+    
+    # Update action to fall in range [0,0.2] for linear velocity and [-1,1] for angular velocity
+    a_in = [action[0] , action[1]]
+    # print("action :",a_in)
     next_state, reward, done, target = env.step(a_in)
     done_bool = 0 if episode_timesteps + 1 == max_ep else int(done)
     done = 1 if episode_timesteps + 1 == max_ep else int(done)
     episode_reward += reward
+    # print("Reward Collected : ", reward)
 
     # Save the tuple in replay buffer
     replay_buffer.add(state, action, reward, done_bool, next_state)
