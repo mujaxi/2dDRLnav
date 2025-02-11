@@ -21,7 +21,7 @@ from visualization_msgs.msg import Marker
 from visualization_msgs.msg import MarkerArray
 
 GOAL_REACHED_DIST = 0.35
-COLLISION_DIST = 0.2
+COLLISION_DIST = 0.35
 TIME_DELTA = 1
 
 # Set a height (in velodyne reference frame) at which to start filtering out the ground
@@ -66,13 +66,13 @@ def check_pos(x, y):
     if 6.41 > x > 6.01 and -1.02 > y > -0.62:
         goal_ok = False
 
-    if 2.21 > x > 1.61 and 1.07 > y > 0.47:
+    if 2.5 > x > 1.36 and 0.1 > y > -0.6:
         goal_ok = False
 
-    if 3.92 > x > 3.32 and 0.11 > y > -0.51:
+    if 5.38 > x > 4.38 and 0.86 > y > 0.2:
         goal_ok = False
 
-    if 5.84 > x > 5.24 and 0.62 > y > 0.02:
+    if 6.56 > x > 5.5 and 0.82 > y > 0.1:
         goal_ok = False
 
     if x > 7.2 or x < 1 or y > 1.4 or y < -1.4:
@@ -102,7 +102,7 @@ class GazeboEnv:
         self.ax.legend()
         self.ax.grid(True)
 
-        self.random_goal = False
+        self.random_goal = True
 
         self.goal_x = 1
         self.goal_y = 0.0
@@ -123,12 +123,12 @@ class GazeboEnv:
         self.set_self_state.pose.orientation.z = 0.0
         self.set_self_state.pose.orientation.w = 1.0
 
-        self.gaps = [[-np.pi / 2 - 0.03, -np.pi / 2 + np.pi / self.environment_dim]]
+        self.gaps = [[-np.pi + 0.03, -np.pi + 2 * np.pi / self.environment_dim]]  # First gap
         for m in range(self.environment_dim - 1):
             self.gaps.append(
-                [self.gaps[m][1], self.gaps[m][1] + np.pi / self.environment_dim]
+                [self.gaps[m][1], self.gaps[m][1] + 2 * np.pi / self.environment_dim]  # Each gap covers 360 / 120 radians
             )
-        self.gaps[-1][-1] += 0.03
+        self.gaps[-1][-1] += 0.03  # Adjust the last gap
 
         port = "11311"
         subprocess.Popen(["roscore", "-p", port])
@@ -206,9 +206,15 @@ class GazeboEnv:
     def odom_callback(self, od_data):
         self.last_odom = od_data
 
+    def wait_for_odom(self):
+        while self.last_odom is None:
+            rospy.sleep(0.1)
+
     # Perform an action and read a new state
     def step(self, action):
         target = False
+
+        self.wait_for_odom()
 
         # Publish the robot action
         vel_cmd = Twist()
@@ -224,7 +230,7 @@ class GazeboEnv:
             print("/gazebo/unpause_physics service call failed")
 
         # propagate state for TIME_DELTA seconds
-        time.sleep(TIME_DELTA)
+        time.sleep(0.2)
 
         rospy.wait_for_service("/gazebo/pause_physics")
         try:
@@ -239,7 +245,18 @@ class GazeboEnv:
         v_state[:] = self.velodyne_data[:]
         laser_state = [v_state]
 
-        # Calculate robot heading from odometry data
+        # if self.last_odom is None or math.isnan(self.last_odom.pose.pose.position.x) or math.isnan(self.last_odom.pose.pose.position.y):
+        #     # If the values are NaN, initialize to 0
+        #     self.odom_x = 0
+        #     self.odom_y = 0
+        #     self.last_odom.pose.pose.orientation.w=0
+        #     self.last_odom.pose.pose.orientation.x=0
+        #     self.last_odom.pose.pose.orientation.y=0
+        #     self.last_odom.pose.pose.orientation.z=0
+        # else:
+        #     # If valid, use the odometry values
+        #     self.odom_x = self.last_odom.pose.pose.position.x
+        #     self.odom_y = self.last_odom.pose.pose.position.y
         self.odom_x = self.last_odom.pose.pose.position.x
         self.odom_y = self.last_odom.pose.pose.position.y
         quaternion = Quaternion(
@@ -302,7 +319,7 @@ class GazeboEnv:
             print("/gazebo/reset_simulation service call failed")
 
         #training mode
-        angle = (-np.pi, np.pi)
+        angle = np.random.uniform(-np.pi, np.pi)
         quaternion = Quaternion.from_euler(0.0, 0.0, angle)
         object_state = self.set_self_state
 
@@ -321,7 +338,7 @@ class GazeboEnv:
         y = 0
         position_ok = False
         while not position_ok:
-            x = np.random.uniform(1.3, 7.3)
+            x = np.random.uniform(0.3, 7.3)
             y = np.random.uniform(-1.3, 1.3)
             position_ok = check_pos(x, y)
 
@@ -527,17 +544,13 @@ class GazeboEnv:
     @staticmethod
     def get_reward(target, collision, action, min_laser):
         
-        penal = 0
-        if 0 > action[0] >0.26:
-            penal = -20
-        
         if target:
             # print("Goal !")
-            return 100.0 + penal
+            return 100.0 
         elif collision:
             # print("Crash!")
-            return -50.0 + penal
+            return -50.0 
         else:
-            r3 = lambda x: 1 - x if x < 0.4 else 0.0
+            r3 = lambda x: (0.45 - x) / 0.45 if x < 0.45 else 0.0
             # print("Robot Jem!")
-            return action[0] * 4 - abs(action[1]) * 2 - r3(min_laser) / 2 + penal
+            return action[0] * 2 - abs(action[1])  - r3(min_laser)
