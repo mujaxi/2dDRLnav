@@ -222,7 +222,7 @@ class TD3(object):
 device = torch.device("cpu")
 seed = 0  # Random seed number
 eval_freq = 1e4  # After how many steps to perform the evaluation
-max_ep = 100  # maximum number of steps per episode
+max_ep = 200  # maximum number of steps per episode
 eval_ep = 10  # number of episodes for evaluation
 max_timesteps = 3e6  # Maximum number of steps to perform
 expl_noise = 1  # Initial exploration noise starting value in range [expl_min ... 1]
@@ -239,8 +239,8 @@ policy_freq = 2  # Frequency of Actor network updates
 buffer_size = 1e6  # Maximum size of the buffer
 file_name = "TD3_velodyne"  # name of the file to store the policy
 save_model = True # Weather to save the model or not
-load_model = False # Weather to load a stored model
-random_near_obstacle = True  # To take random actions near obstacles or not
+load_model = True # Weather to load a stored model
+random_near_obstacle = False # To take random actions near obstacles or not
 
 # Create the network storage folders
 if not os.path.exists("./results"):
@@ -249,7 +249,7 @@ if save_model and not os.path.exists("./pytorch_models"):
     os.makedirs("./pytorch_models")
 
 # Create the training environment
-environment_dim = 120
+environment_dim = 40
 robot_dim = 4
 env = GazeboEnv("multi_robot_scenario.launch", environment_dim)
 time.sleep(5)

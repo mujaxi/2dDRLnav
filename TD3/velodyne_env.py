@@ -21,7 +21,7 @@ from visualization_msgs.msg import Marker
 from visualization_msgs.msg import MarkerArray
 
 GOAL_REACHED_DIST = 0.35
-COLLISION_DIST = 0.35
+COLLISION_DIST = 0.45
 TIME_DELTA = 1
 
 # Set a height (in velodyne reference frame) at which to start filtering out the ground
@@ -551,6 +551,7 @@ class GazeboEnv:
             # print("Crash!")
             return -50.0 
         else:
-            r3 = lambda x: (0.45 - x) / 0.45 if x < 0.45 else 0.0
+            r3 = lambda x: (1 - x) / 1 if x < 0.45 else 0.0
             # print("Robot Jem!")
-            return action[0] * 2 - abs(action[1])  - r3(min_laser)
+            return action[0] * 2 - r3(min_laser)
+            # return action[0] * 2 - abs(action[1])  - r3(min_laser)
